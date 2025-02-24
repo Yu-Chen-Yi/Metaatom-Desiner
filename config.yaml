@@ -1,0 +1,189 @@
+forms:
+  Compute Settings:
+    fields:
+      - name: "Project Folder"
+        type: "openfolder"
+        default: "C:/Users/CYY/Desktop/DOES_APP/DOE_app/result"
+      - name: "Device"
+        type: "combo_box"
+        values: ["GPU", "CPU"]
+
+      - name: "Data Type"
+        type: "combo_box"
+        values: ["float32", "float64"]
+
+      - name: "Random Seed"
+        type: "text_input"
+        default: "548787"
+
+  RCWA Setting:
+    fields:
+      - name: "Wavelength"
+        type: "text_input"
+        default: "940."
+
+      - name: "Period"
+        type: "text_input"
+        default: "5000."
+        
+      - name: "Input material"
+        type: "combo_box"
+        values: "Materials_data"
+      
+      - name: "Output material"
+        type: "combo_box"
+        values: "Materials_data"
+
+      - name: "Incident angle"
+        type: "text_input"
+        default: "0."
+      
+      - name: "Azimuth angle"
+        type: "text_input"
+        default: "0."
+
+      - name: "Harmonic order"
+        type: "text_input"
+        default: "9"
+
+      - name: "Save args"
+        type: "button"
+        event: "self.get_gui_parameter"
+
+  Shape Setting:
+    fields:
+      - name: "Shape type"
+        type: "combo_box"
+        values: ["circle", "rectangle", "ellipse", "square", "rhombus", "hollow_square", "hollow_circle", "cross"]
+      
+      - name: "layer1-A"
+        type: "combo_box"
+        values: "Materials_data"
+
+      - name: "layer1-B"
+        type: "combo_box"
+        values: "Materials_data"
+
+      - name: "Thickness"
+        type: "text_input"
+        default: ""
+
+      - name: "Parameter1"
+        type: "text_input"
+        default: ""
+
+      - name: "Parameter2"
+        type: "text_input"
+        default: ""
+
+      - name: "Theta"
+        type: "text_input"
+        default: "0."
+  
+  Incident Sweept:
+    fields:
+      - name: "Incident min"
+        type: "text_input"
+        default: "0."
+      - name: "Incident max"
+        type: "text_input"
+        default: "0."
+      - name: "Incident points"
+        type: "text_input"
+        default: "1"
+
+  Azimuth Sweept:
+    fields:
+      - name: "Azimuth min"
+        type: "text_input"
+        default: "0."
+      - name: "Azimuth max"
+        type: "text_input"
+        default: "0."
+      - name: "Azimuth points"
+        type: "text_input"
+        default: "1"
+
+  Wavelength Sweept:
+    fields:
+      - name: "Wavelength min"
+        type: "text_input"
+        default: ""
+      - name: "Wavelength max"
+        type: "text_input"
+        default: ""
+      - name: "Wavelength points"
+        type: "text_input"
+        default: ""
+
+  Period Sweept:
+    fields:
+      - name: "Period min"
+        type: "text_input"
+        default: ""
+      - name: "Period max"
+        type: "text_input"
+        default: ""
+      - name: "Period points"
+        type: "text_input"
+        default: ""
+
+  Thickness Sweept:
+    fields:
+      - name: "Thickness min"
+        type: "text_input"
+        default: ""
+      - name: "Thickness max"
+        type: "text_input"
+        default: ""
+      - name: "Thickness points"
+        type: "text_input"
+        default: ""
+
+  Parameter1 Sweept:
+    fields:
+      - name: "Parameter1 min"
+        type: "text_input"
+        default: ""
+      - name: "Parameter1 max"
+        type: "text_input"
+        default: ""
+      - name: "Parameter1 points"
+        type: "text_input"
+        default: ""
+
+  Parameter2 Sweept:
+    fields:
+      - name: "Parameter2 min"
+        type: "text_input"
+        default: ""
+      - name: "Parameter2 max"
+        type: "text_input"
+        default: ""
+      - name: "Parameter2 points"
+        type: "text_input"
+        default: ""
+  
+  Parameter3 Sweept:
+    fields:
+      - name: "Parameter3 min"
+        type: "text_input"
+        default: ""
+      - name: "Parameter3 max"
+        type: "text_input"
+        default: ""
+      - name: "Parameter3 points"
+        type: "text_input"
+        default: ""
+
+  Rotate angle Sweept:
+    fields:
+      - name: "Theta min"
+        type: "text_input"
+        default: ""
+      - name: "Theta max"
+        type: "text_input"
+        default: ""
+      - name: "Theta points"
+        type: "text_input"
+        default: ""

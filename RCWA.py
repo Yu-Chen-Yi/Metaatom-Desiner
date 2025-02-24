@@ -1,24 +1,48 @@
 import torch
 import numpy as np  
 import torcwa
+import random
+import os
 from Materials import Material
+from rcwa_geo import geometry
 
 GRID_XPIXELS = 300
 GRID_YPIXELS = 300
-SIMULATION_DTYPE = torch.complex64
-GEOMETRIC_DTYPE = torch.float32
 EDGE_SHARPNESS = 1000
 
 class RCWA:
     def __init__(self, args):
-        self.device = args["device"]
-        self.shape_type = args["shape type"]
-        self.harmonic_order = args["harmonic order"]
+        # Set device based on self.args["Device"]
+        if args["Device"] == "GPU":
+            if torch.cuda.is_available():
+                self.device = torch.device('cuda')  # Use GPU if available
+            else:
+                raise RuntimeError("GPU selected, but no CUDA-compatible device is available.")
+        else:
+            self.device = torch.device('cpu')  # Default to CPU
+        self.shape_type = args["Shape type"]
+        self.harmonic_order = args["Harmonic order"]
         self.input_material = args["Input material"]
         self.output_material = args["Output material"]
         self.layer1_materialA = args["Layer 1 material A"]
         self.layer1_materialB = args["Layer 1 material B"]
-
+        if args["Data Type"] == "float32":
+            self.sim_dtype = torch.complex64  # Complex number type for float32
+            self.geo_dtype = torch.float32    # Geometry type for float32
+        elif args["Data Type"] == "float64":
+            self.sim_dtype = torch.complex128  # Complex number type for float64
+            self.geo_dtype = torch.float64     # Geometry type for float64
+        else:
+            self.sim_dtype = torch.complex64  # Complex number type for float32
+            self.geo_dtype = torch.float32    # Geometry type for float32
+        # Set random seed for reproducibility of the results
+        random.seed(args["Random Seed"])  # Set seed for Python's random module
+        os.environ['PYTHONHASHSEED'] = str(args["Random Seed"])  # Set seed for Python hash-based operations
+        np.random.seed(args["Random Seed"])  # Set seed for NumPy
+        torch.manual_seed(args["Random Seed"])  # Set seed for PyTorch (CPU)
+        if args["Device"] == "GPU":
+            torch.cuda.manual_seed(args["Random Seed"])  # Set seed for CUDA (single GPU)
+            torch.cuda.manual_seed_all(args["Random Seed"])  # Set seed for all GPUs (if using multiple)
     def get_Sparameter(self, 
                        wvln_list=None, 
                        period_list=None,
@@ -42,7 +66,7 @@ class RCWA:
                                  len(var3_list), 
                                  len(var4_list), 
                                  len(orders_list), 
-                                 dtype=SIMULATION_DTYPE, device=self.device
+                                 dtype=self.sim_dtype, device=self.device
                                  )
         tensor_txy, tensor_tyx, tensor_tyy, tensor_rxx, tensor_rxy, tensor_ryx, tensor_ryy = [torch.zeros_like(tensor_txx) for _ in range(7)]
         # Simulation environment
@@ -74,7 +98,7 @@ class RCWA:
     
     def forward(self, wvln, pd, thickness, inc_deg, azi_deg, var1, var2, var3, var4, order_list):
         # light
-        lamb0 = torch.tensor(wvln,dtype=GEOMETRIC_DTYPE,device=self.device)    # nm
+        lamb0 = torch.tensor(wvln,dtype=self.geo_dtype,device=self.device)    # nm
         inc_ang = inc_deg*(np.pi/180)                    # radian
         azi_ang = azi_deg*(np.pi/180)                    # radian
 
@@ -85,19 +109,26 @@ class RCWA:
         layer1_epsB = Material.forward(wavelength=lamb0, name=self.layer1_materialB)**2
         # geometry
         L = [pd, pd]            # nm / nm
-        torcwa.rcwa_geo.dtype = GEOMETRIC_DTYPE
-        torcwa.rcwa_geo.device = self.device
-        torcwa.rcwa_geo.Lx = L[0]
-        torcwa.rcwa_geo.Ly = L[1]
-        torcwa.rcwa_geo.nx = GRID_XPIXELS
-        torcwa.rcwa_geo.ny = GRID_YPIXELS
-        torcwa.rcwa_geo.grid()
-        torcwa.rcwa_geo.edge_sharpness = EDGE_SHARPNESS
-
-        layer1_geometry = torcwa.rcwa_geo.circle(R=var1/2,Cx=L[0]/2.,Cy=L[1]/2.)
+        pattern = geometry(Lx=L[0], Ly=L[1], nx=GRID_XPIXELS, ny=GRID_YPIXELS, edge_sharpness=EDGE_SHARPNESS, dtype=self.geo_dtype, device=self.device)
+        if self.shape_type == 'circle':
+            layer1_geometry = pattern.circle(var1,var2,L[0]/2,L[0]/2,var3)
+        elif self.shape_type == 'rectangle':
+            layer1_geometry = pattern.rectangle(var1,var2,L[0]/2,L[0]/2,var3)
+        elif self.shape_type == 'ellipse':
+            layer1_geometry = pattern.ellipse(var1,var2,L[0]/2,L[0]/2,var3)
+        elif self.shape_type == 'square':
+            layer1_geometry = pattern.square(var1,var2,L[0]/2,L[0]/2,var3)
+        elif self.shape_type == 'rhombus':
+            layer1_geometry = pattern.rhombus(var1,var2,L[0]/2,L[0]/2,var3)
+        elif self.shape_type == 'hollow_square':
+            layer1_geometry = pattern.hollow_square(var1,var2,L[0]/2,L[0]/2,var3)
+        elif self.shape_type == 'hollow_circle':
+            layer1_geometry = pattern.hollow_circle(var1,var2,L[0]/2,L[0]/2,var3)
+        elif self.shape_type == 'cross':
+            layer1_geometry = pattern.cross(var1,var2,L[0]/2,L[0]/2,var3)
         # layers
         # Generate and perform simulation
-        sim = torcwa.rcwa(freq=1/lamb0,order=[self.harmonic_order,self.harmonic_order],L=L,dtype=SIMULATION_DTYPE,device=self.device)
+        sim = torcwa.rcwa(freq=1/lamb0,order=[self.harmonic_order,self.harmonic_order],L=L,dtype=self.sim_dtype,device=self.device)
         sim.add_input_layer(eps=input_eps)
         sim.add_output_layer(eps=output_eps)
         sim.set_incident_angle(inc_ang=inc_ang, azi_ang=azi_ang)

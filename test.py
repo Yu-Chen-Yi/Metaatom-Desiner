@@ -2,9 +2,11 @@ from RCWA import RCWA
 from objprint import objprint
 import torch
 args = {}
-args["device"] = torch.device('cuda')
-args["shape type"] = "circle"
-args["harmonic order"] = 7
+args["Random Seed"] = 777
+args["Device"] = "GPU"
+args["Data Type"] = "float32"
+args["Shape type"] = "circle"
+args["Harmonic order"] = 7
 args["Input material"] = "air.txt"
 args["Output material"] = "air.txt"
 args["Layer 1 material A"] = "aSiH.txt"
